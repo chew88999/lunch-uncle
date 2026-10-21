@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import {
   formatForecast,
   formatBusArrivals,
+  formatPlaces,
   haversineMetres,
+  CT_HUB_2,
 } from "../src/tools.js";
 
 test("formatForecast picks the requested area", () => {
@@ -46,6 +48,28 @@ test("formatBusArrivals converts durations to whole minutes", () => {
       { service: "13", next_min: 2, subsequent_min: 20 },
       { service: "107M", next_min: 1, subsequent_min: null },
     ],
+  });
+});
+
+test("formatPlaces keeps open status and measures from the origin", () => {
+  const places = [
+    {
+      displayName: { text: "Success Chicken Rice" },
+      rating: 4.2,
+      location: { latitude: 1.3073, longitude: 103.8631 },
+      currentOpeningHours: { openNow: false },
+    },
+    { displayName: { text: "No Hours" }, location: CT_HUB_2 },
+  ];
+
+  const [first, second] = formatPlaces(places, CT_HUB_2);
+  assert.equal(first.open_now, false);
+  assert.ok(first.distance_m > 400 && first.distance_m < 550);
+  assert.deepEqual(second, {
+    name: "No Hours",
+    rating: null,
+    distance_m: 0,
+    open_now: null,
   });
 });
 
